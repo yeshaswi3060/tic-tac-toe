@@ -3,92 +3,123 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Tic‑Tac‑Toe — Yeshaswi Cheat Edition v2</title>
+<title>Tic‑Tac‑Toe — Yeshaswi Cheat Edition v3</title>
 <style>
   :root{
-    --bg:#060912; --panel:#0c1324; --muted:#93a0b8; --fg:#eef2ff; --primary:#7aa7ff; --accent:#22d3ee; --hot:#ff7ab6; --warn:#fde047;
-    --br:20px; --shadow:0 20px 60px rgba(0,0,0,.5);
+    --bg:#050910; --panel:#0b1326; --muted:#94a3b8; --fg:#eaf1ff; --primary:#7aa7ff; --accent:#22d3ee; --hot:#ff7ab6; --warn:#fde047;
+    --br:22px; --shadow:0 24px 80px rgba(0,0,0,.55);
   }
   *{box-sizing:border-box}
   html,body{height:100%}
   body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial; color:var(--fg);
-       background:radial-gradient(1600px 900px at 20% -10%,#0e1726 0,#060912 45%),linear-gradient(180deg,#060912,#05070e 40%);
+       background:
+         radial-gradient(1400px 800px at 10% -10%,#0d1730 0,#050910 45%),
+         linear-gradient(180deg,#050910,#03060c 40%);
        overflow:hidden;}
-  .wrap{position:relative; display:grid; grid-template-columns: 1fr 320px; gap:16px; width:min(1200px,96vw); margin:20px auto; align-items:start}
+
+  /* Subtle animated grid background */
+  .bggrid{position:fixed; inset:0; background:
+      linear-gradient(transparent 95%, rgba(34,211,238,.1) 96%),
+      linear-gradient(90deg, transparent 95%, rgba(34,211,238,.1) 96%);
+    background-size: 52px 52px; mask-image: radial-gradient(1000px 600px at 50% -10%,#000 30%, transparent 80%);
+    animation:gridmove 20s linear infinite; opacity:.35; z-index:1}
+  @keyframes gridmove{to{background-position: 0 52px, 52px 0}}
+
+  .wrap{position:relative; display:grid; grid-template-columns: 1fr 360px; gap:18px; width:min(1240px,96vw); margin:24px auto; align-items:start; z-index:2}
   header{grid-column:1/-1; display:flex; align-items:center; justify-content:space-between}
-  h1{margin:8px 0 0; font-size:clamp(22px,3.5vw,34px)}
+  h1{margin:8px 0 0; font-size:clamp(22px,3.5vw,36px)}
   .sub{color:var(--muted); font-size:14px}
 
-  .card{background:linear-gradient(180deg,#0b1020,#0a0f1d); border:1px solid rgba(255,255,255,.08); border-radius:var(--br); box-shadow:var(--shadow); padding:16px}
-  .board{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; width:min(560px,92vw); margin:12px auto}
-  .cell{aspect-ratio:1/1; background:#0d1628; border:1px solid rgba(255,255,255,.08); border-radius:18px; display:grid; place-items:center; font-weight:900; cursor:pointer; position:relative;
+  .card{background:linear-gradient(180deg,#0b1224,#091325); border:1px solid rgba(255,255,255,.09); border-radius:var(--br); box-shadow:var(--shadow); padding:16px}
+  .board{display:grid; grid-template-columns:repeat(3,1fr); gap:14px; width:min(600px,92vw); margin:12px auto}
+  .cell{aspect-ratio:1/1; background:#0b162c; border:1px solid rgba(255,255,255,.1); border-radius:20px; display:grid; place-items:center; font-weight:900; cursor:pointer; position:relative;
         transition: transform .08s ease, filter .2s ease, box-shadow .2s ease}
   .cell:hover{transform:translateY(-1px)}
-  .cell.x span{color:#9cc2ff}
+  .cell.x span{color:#a9c9ff}
   .cell.o span{color:#34d399}
-  .cell span{font-size:clamp(46px,10vw,76px)}
-  .cell.pulse{box-shadow:0 0 0 2px #60a5fa44, 0 0 0 8px #22d3ee22}
+  .cell span{font-size:clamp(50px,10vw,78px)}
+  .cell.pulse{box-shadow:0 0 0 2px #60a5fa44, 0 0 0 10px #22d3ee22}
   .cell.flash{animation:flash .5s ease 2}
   @keyframes flash{50%{filter:brightness(2) saturate(1.4)}}
 
-  /* Right panel: Event log */
-  .log{height:640px; overflow:auto; scrollbar-width:thin;}
+  /* Right panel: Event log + Cheat toggles */
+  .side{position:sticky; top:18px}
+  .log{height:700px; overflow:auto; scrollbar-width:thin;}
   .log h3{margin:0 0 10px}
   .log ul{list-style:none; padding:0; margin:0}
-  .log li{font-size:13px; color:#cfe2ff; padding:8px 10px; border-left:3px solid transparent; margin:0 0 8px; background:#0d1628; border-radius:10px}
+  .log li{font-size:13px; color:#d8e6ff; padding:8px 10px; border-left:3px solid transparent; margin:0 0 8px; background:#0e1a33; border-radius:12px}
   .log li.bot{border-color:#7aa7ff}
   .log li.human{border-color:#34d399}
+  .tog{display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin:12px 0 6px}
+  .chip{font-size:12px; padding:6px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.1); background:#0e1a33; color:#cfe2ff}
 
   /* Start overlay */
   .overlay{position:fixed; inset:0; display:grid; place-items:center; background:rgba(2,6,23,.75); backdrop-filter:blur(4px); z-index:40}
-  .sheet{background:linear-gradient(180deg,#0b1020,#0a0f1d); border:1px solid rgba(255,255,255,.08); border-radius:24px; padding:20px; width:min(560px,92vw); box-shadow:var(--shadow)}
+  .sheet{background:linear-gradient(180deg,#0b1020,#0a0f1d); border:1px solid rgba(255,255,255,.12); border-radius:26px; padding:22px; width:min(560px,92vw); box-shadow:var(--shadow)}
   .row{display:flex; gap:12px; flex-wrap:wrap; align-items:center; justify-content:center}
-  .btn{appearance:none; border:none; border-radius:12px; padding:12px 16px; background:#101a2e; color:var(--fg); border:1px solid rgba(255,255,255,.1); cursor:pointer; font-weight:800}
+  .btn{appearance:none; border:none; border-radius:14px; padding:12px 16px; background:#101a2e; color:var(--fg); border:1px solid rgba(255,255,255,.12); cursor:pointer; font-weight:800}
   .btn.primary{background:linear-gradient(135deg,#2563eb,#60a5fa); border:none}
 
-  .status{display:flex; align-items:center; justify-content:center; gap:10px; margin:6px auto 0; width:min(560px,92vw)}
+  .status{display:flex; align-items:center; justify-content:center; gap:10px; margin:6px auto 0; width:min(600px,92vw)}
   .status .text{color:#c7d2fe}
 
   .win{animation:glow 900ms ease-in-out infinite alternate}
   @keyframes glow{to{box-shadow:0 0 0 2px rgba(99,102,241,.25), 0 10px 30px rgba(99,102,241,.25);}}
 
   /* CheatCam */
-  .cheatcam{position:fixed; right:18px; bottom:18px; width:min(420px,90vw); z-index:45}
-  .cheatcam .hud{background:linear-gradient(180deg,#10172a,#0a0f1d); border:1px solid rgba(255,255,255,.1); border-radius:18px; box-shadow:var(--shadow); padding:12px}
+  .cheatcam{position:fixed; right:18px; bottom:18px; width:min(460px,92vw); z-index:45}
+  .cheatcam .hud{background:linear-gradient(180deg,#0f1a35,#0a0f1d); border:1px solid rgba(255,255,255,.14); border-radius:20px; box-shadow:var(--shadow); padding:12px}
   .hud .title{display:flex; align-items:center; gap:8px; font-weight:900}
   .led{width:10px; height:10px; border-radius:50%; background:#ef4444; box-shadow:0 0 12px #ef4444aa}
-  .bar{height:8px; background:#0f172a; border-radius:10px; margin:10px 0; overflow:hidden}
-  .bar>i{display:block; height:100%; width:0; background:linear-gradient(90deg,#22d3ee,#7aa7ff,#22d3ee); box-shadow:0 0 18px #22d3eeAA inset; transition:width .4s ease}
+  .bar{height:10px; background:#0f172a; border-radius:12px; margin:10px 0; overflow:hidden}
+  .bar>i{display:block; height:100%; width:0; background:linear-gradient(90deg,#22d3ee,#7aa7ff,#22d3ee); box-shadow:0 0 18px #22d3eeAA inset; transition:width .35s ease}
   .steps{display:flex; gap:6px; flex-wrap:wrap}
-  .tag{font-size:11px; color:#cfe2ff; padding:6px 8px; background:#0b1220; border:1px solid rgba(255,255,255,.08); border-radius:999px}
+  .tag{font-size:11px; color:#cfe2ff; padding:6px 8px; background:#0b1220; border:1px solid rgba(255,255,255,.12); border-radius:999px}
+  .ring{--sz:76px; position:absolute; top:-12px; right:-12px; width:var(--sz); height:var(--sz); border-radius:50%; background:conic-gradient(#22d3ee 0,var(--p), transparent 0 360deg);}
+  .ring:after{content:""; position:absolute; inset:7px; border-radius:50%; background:#0f1a35}
 
   /* Big Taunt */
   .winner{position:fixed; inset:0; display:none; place-items:center; z-index:60}
-  .winner .panel{background:radial-gradient(800px 400px at 50% -10%,#0b1329,#060912 50%); border:1px solid rgba(255,255,255,.08); border-radius:24px; padding:22px; width:min(780px,94vw); text-align:center; box-shadow:0 40px 120px rgba(0,0,0,.6)}
-  .botface{width:100px; height:100px; border-radius:50%; display:grid; place-items:center; margin:0 auto 14px; background:conic-gradient(from 0deg, #7aa7ff, #22d3ee, #7aa7ff); filter:drop-shadow(0 12px 24px rgba(34,211,238,.25))}
-  .botface span{background:#0b1220; width:86px; height:86px; border-radius:50%; display:grid; place-items:center; font-weight:900}
-  .quip{color:#bcd0ff; margin:10px 0 14px; font-size:clamp(16px,2.4vw,22px)}
+  .winner .panel{background:radial-gradient(900px 500px at 50% -10%,#0b1431,#060912 55%); border:1px solid rgba(255,255,255,.12); border-radius:28px; padding:26px; width:min(880px,94vw); text-align:center; box-shadow:0 40px 140px rgba(0,0,0,.65)}
+  .botface{width:120px; height:120px; border-radius:50%; display:grid; place-items:center; margin:0 auto 16px; background:conic-gradient(from 0deg, #7aa7ff, #22d3ee, #7aa7ff); filter:drop-shadow(0 12px 26px rgba(34,211,238,.25))}
+  .botface span{background:#0b1220; width:100px; height:100px; border-radius:50%; display:grid; place-items:center; font-weight:900}
+  .quip{color:#cfe2ff; margin:10px 0 16px; font-size:clamp(18px,2.6vw,24px)}
   .cta{display:flex; gap:10px; justify-content:center}
+  .ticker{overflow:hidden; mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); margin:10px 0}
+  .ticker .row{display:flex; gap:20px; white-space:nowrap; animation:marq 20s linear infinite}
+  .pill{border:1px solid rgba(255,255,255,.14); border-radius:999px; padding:8px 12px; font-size:14px; color:#dbe7ff; background:#0e1a33}
+  @keyframes marq{to{transform:translateX(-50%)}}
 
   /* Particles canvas sits behind */
-  canvas#fx{position:fixed; inset:0; pointer-events:none; z-index:5}
+  canvas#fx{position:fixed; inset:0; pointer-events:none; z-index:3}
 
   /* Vignette + screen shake */
-  .vignette:before{content:""; position:fixed; inset:0; pointer-events:none; box-shadow:inset 0 0 200px rgba(0,0,0,.6); z-index:6}
-  .shake{animation:shake .5s ease}
+  .vignette:before{content:""; position:fixed; inset:0; pointer-events:none; box-shadow:inset 0 0 220px rgba(0,0,0,.65); z-index:4}
+  .shake{animation:shake .55s ease}
   @keyframes shake{10%,90%{transform:translate(-2px,-1px)} 20%,80%{transform:translate(3px,1px)} 30%,50%,70%{transform:translate(-6px,2px)} 40%,60%{transform:translate(6px,-2px)}}
 
   /* Floating chat bubble taunts */
-  .bubble{position:fixed; left:50%; transform:translateX(-50%); bottom:110px; background:#0b1220; border:1px solid rgba(255,255,255,.08); padding:10px 12px; border-radius:14px; color:#dbe7ff; font-size:14px; z-index:55}
+  .bubble{position:fixed; left:50%; transform:translateX(-50%); bottom:110px; background:#0b1220; border:1px solid rgba(255,255,255,.12); padding:10px 12px; border-radius:14px; color:#dbe7ff; font-size:14px; z-index:55}
+
+  /* Global banners */
+  .banner{position:fixed; inset:0; display:none; place-items:center; z-index:50}
+  .banner .inner{background:linear-gradient(180deg,#101b38,#0b1220); border:1px solid rgba(255,255,255,.14); border-radius:22px; padding:16px 18px; box-shadow:var(--shadow); text-align:center}
+  .banner h3{margin:6px 0 0}
+  .scan{display:flex; gap:6px; margin-top:10px; justify-content:center}
+  .scan i{width:32px; height:6px; border-radius:8px; background:linear-gradient(90deg,#22d3ee,#7aa7ff); animation:scan 1s ease-in-out infinite}
+  .scan i:nth-child(2){animation-delay:.1s}
+  .scan i:nth-child(3){animation-delay:.2s}
+  @keyframes scan{50%{opacity:.3; transform:scaleX(.6)}}
 </style>
 </head>
 <body>
+<div class="bggrid"></div>
 <canvas id="fx"></canvas>
 <div class="wrap">
   <header>
     <div>
       <h1>🤖 Tic‑Tac‑Toe — Bot: <b>Yeshaswi</b></h1>
-      <div class="sub">Pick <b>X</b> or <b>O</b> to start instantly. Watch the <b>CheatCam</b> when things get… unfair. 😈</div>
+      <div class="sub">Pick <b>X</b> or <b>O</b> to start instantly. Watch the <b>CheatCam</b> & global banners when things get… unfair. 😈</div>
     </div>
   </header>
 
@@ -98,10 +129,16 @@
     <div class="status"><div id="statusText" class="text">Choose your symbol to begin.</div></div>
   </div>
 
-  <!-- Right: Event Log -->
-  <aside class="card log">
-    <h3>📜 Event Log</h3>
-    <ul id="log"></ul>
+  <!-- Right: Event Log + toggles -->
+  <aside class="card side">
+    <div class="tog">
+      <span class="chip" id="sfxToggle">🔊 SFX: ON</span>
+      <span class="chip" id="fxToggle">✨ FX: HIGH</span>
+    </div>
+    <div class="log">
+      <h3>📜 Event Log</h3>
+      <ul id="log"></ul>
+    </div>
   </aside>
 </div>
 
@@ -119,10 +156,11 @@
 
 <!-- CheatCam HUD -->
 <div id="cheatcam" class="cheatcam" style="display:none">
-  <div class="hud">
+  <div class="hud" style="position:relative">
     <div class="title"><span class="led" id="rec"></span><span>CheatCam • Yeshaswi syslog</span></div>
     <div class="bar"><i id="barfill"></i></div>
     <div class="steps" id="steps"></div>
+    <div class="ring" id="ring" style="--p:0deg"></div>
   </div>
 </div>
 
@@ -131,11 +169,21 @@
   <div class="panel">
     <div class="botface"><span>Y</span></div>
     <h2 style="margin:6px 0 0">Yeshaswi wins. Obviously. 🏆</h2>
+    <div class="ticker"><div class="row" id="tickerRow"></div></div>
     <p id="quip" class="quip">That was adorable. You almost had three in a row… until reality updated. 😉</p>
     <div class="cta">
       <button id="rematch" class="btn primary">Rematch</button>
       <button id="switch" class="btn">Switch X/O</button>
     </div>
+  </div>
+</div>
+
+<!-- Global CHEAT banner -->
+<div id="banner" class="banner">
+  <div class="inner">
+    <div style="font-size:12px; color:#9fb8ff; letter-spacing:.25em; text-transform:uppercase">Cheat Override</div>
+    <h3>Reality Patch: <span id="patchName">v∞</span></h3>
+    <div class="scan"><i></i><i></i><i></i></div>
   </div>
 </div>
 
@@ -155,6 +203,12 @@
   const barfill = document.getElementById('barfill');
   const stepsEl = document.getElementById('steps');
   const bubble = document.getElementById('bubble');
+  const ring = document.getElementById('ring');
+  const banner = document.getElementById('banner');
+  const patchNameEl = document.getElementById('patchName');
+  const tickerRow = document.getElementById('tickerRow');
+  const sfxToggle = document.getElementById('sfxToggle');
+  const fxToggle = document.getElementById('fxToggle');
 
   const fx = document.getElementById('fx');
   const ctx = fx.getContext('2d');
@@ -178,27 +232,40 @@
     "Call that a win? My timeline says otherwise.",
     "Nice try. I patched your victory in prod.",
     "This board has DRM. Wins require admin access.",
-    "Your win was flagged by QA. Rejected."
+    "Your win was flagged by QA. Rejected.",
+    "404: Human victory not found.",
+    "Access denied: fun detected.",
+    "I make the bugs on purpose."
   ];
+
+  const TICKER = [
+    'Deploying hotfix', 'Rolling back your move', 'Patching parity bits', 'Encrypting your victory', 'Spoofing RNG seed', 'Forging checksum', 'Upgrading ego drivers'
+  ];
+
+  // --- Toggles ---
+  let SFX=true; let FXHIGH=true;
+  sfxToggle.onclick=()=>{ SFX=!SFX; sfxToggle.textContent = `🔊 SFX: ${SFX?'ON':'OFF'}`; };
+  fxToggle.onclick=()=>{ FXHIGH=!FXHIGH; fxToggle.textContent = `✨ FX: ${FXHIGH?'HIGH':'LOW'}`; };
 
   // --- Utility UI helpers ---
   function log(msg, who='bot'){
     const li=document.createElement('li'); li.className=who; li.textContent=msg; logEl.prepend(li);
   }
-  function setBubble(text, ms=1000){ bubble.textContent=text; bubble.style.display='block'; setTimeout(()=> bubble.style.display='none', ms); }
-  function beep(freq=440, dur=0.1){
+  function setBubble(text, ms=1200){ bubble.textContent=text; bubble.style.display='block'; setTimeout(()=> bubble.style.display='none', ms); }
+  function beep(freq=440, dur=0.08){
+    if(!SFX) return;
     try{
       const ac = new (window.AudioContext||window.webkitAudioContext)();
       const o = ac.createOscillator(); const g = ac.createGain();
-      o.type='square'; o.frequency.value=freq; o.connect(g); g.connect(ac.destination); g.gain.setValueAtTime(.08, ac.currentTime);
+      o.type='square'; o.frequency.value=freq; o.connect(g); g.connect(ac.destination); g.gain.setValueAtTime(.07, ac.currentTime);
       o.start(); o.stop(ac.currentTime+dur);
     }catch(e){}
   }
   function pulseCell(i){ const c=boardEl.children[i]; c.classList.add('pulse'); setTimeout(()=>c.classList.remove('pulse'),500); }
 
   // Particles
-  const parts=[]; function burst(x,y){
-    for(let i=0;i<80;i++) parts.push({x,y, vx:(Math.random()-.5)*6, vy:(Math.random()-.5)*6, life: 60+Math.random()*40});
+  const parts=[]; function burst(x,y,n=FXHIGH?90:50){
+    for(let i=0;i<n;i++) parts.push({x,y, vx:(Math.random()-.5)*6, vy:(Math.random()-.5)*6, life: 60+Math.random()*40});
   }
   function tickFX(){
     ctx.clearRect(0,0,W,H);
@@ -234,6 +301,7 @@
     state.turn = 'X';
     state.running = true;
     state.cheated = false;
+    buildTicker();
     log('Game started • You are '+state.human+' • Bot is Yeshaswi','bot');
     statusEl.textContent = `${state.human} vs Yeshaswi — ${state.turn===state.human?'Your':'Bot'} turn.`;
     updateBoard();
@@ -247,12 +315,12 @@
     if(state.turn!==state.human) return;
     place(i, state.human);
     if(!state.running) return;
-    setTimeout(botMove, 350);
+    setTimeout(botMove, 360);
   }
 
   function place(i, player){
     if(state.board[i]) return false;
-    state.board[i]=player; pulseCell(i); beep(player===state.human?660:440, .06);
+    state.board[i]=player; pulseCell(i); beep(player===state.human?680:440, .06);
     state.turn = player==='X'?'O':'X';
     updateBoard();
 
@@ -284,30 +352,37 @@
     place(move, state.bot);
   }
 
-  // --- Cheating Logic with visible UI ---
+  // --- Cheating Logic with cinematic UI ---
   function cheatWin(humanLine){
     if(state.cheated) return; state.cheated = true;
-    document.body.classList.add('vignette','shake'); setTimeout(()=>document.body.classList.remove('shake'), 600);
+    document.body.classList.add('vignette','shake'); setTimeout(()=>document.body.classList.remove('shake'), 650);
 
-    // show CheatCam HUD
-    cheatcam.style.display='block'; stepsEl.innerHTML=''; barfill.style.width='0%';
+    // global CHEAT banner
+    const patches=['v∞','Ω-override','Reality-β','Patch: YS-13','Kernel-Yeshaswi'];
+    const picked=patches[Math.floor(Math.random()*patches.length)];
+    patchNameEl.textContent=picked;
+    banner.style.display='grid';
+    setTimeout(()=> banner.style.display='none', 1300);
+
+    // CheatCam HUD
+    cheatcam.style.display='block'; stepsEl.innerHTML=''; barfill.style.width='0%'; ring.style.setProperty('--p','0deg');
     const steps = [
-      'Intercepting victory packet', 'Patching game state', 'Bypassing fair‑play DRM', 'Recompiling timeline', 'Deploying hotfix: v∞'
+      'Intercepting victory packet', 'Patching game state', 'Bypassing fair‑play DRM', 'Recompiling timeline', 'Deploying hotfix: '+picked
     ];
-    let p=0; const tID = setInterval(()=>{ if(p<100){ p+=Math.random()*22; barfill.style.width=Math.min(p,100)+'%'; } }, 200);
-    steps.forEach((s,i)=> setTimeout(()=> addTag(s), 300*i));
+    let p=0; const tID = setInterval(()=>{ if(p<100){ p+=Math.random()*(FXHIGH?26:18); barfill.style.width=Math.min(p,100)+'%'; ring.style.setProperty('--p', Math.min(p,100)*3.6+'deg'); } }, 180);
+    steps.forEach((s,i)=> setTimeout(()=> addTag(s), 280*i));
 
-    // choose a flashy tactic
-    const tactics = [cheatSwapTile, cheatTimeRewind, cheatTeleport, cheatRotateBoard, cheatStealCenter, cheatLightningStrike];
+    // choose a flashy tactic (now with two new ones)
+    const tactics = [cheatSwapTile, cheatTimeRewind, cheatTeleport, cheatRotateBoard, cheatStealCenter, cheatLightningStrike, cheatMatrixRain, cheatGlitchClone];
     const tactic = tactics[Math.floor(Math.random()*tactics.length)];
-    setBubble('Cheat module: '+tactic.name.replace('cheat',''), 1200);
+    setBubble('Cheat module: '+tactic.name.replace('cheat',''), 1400);
     log('Cheat activated: '+tactic.name.replace('cheat',''),'bot');
 
     setTimeout(()=> tactic(humanLine, ()=>{
-      clearInterval(tID); barfill.style.width='100%';
+      clearInterval(tID); barfill.style.width='100%'; ring.style.setProperty('--p','360deg');
       forceBotWin();
       celebrate();
-    }), 1600);
+    }), 1700);
   }
 
   function addTag(text){ const span=document.createElement('span'); span.className='tag'; span.textContent=text; stepsEl.appendChild(span); beep(520,.04); }
@@ -324,7 +399,20 @@
   function celebrate(){
     statusEl.textContent = 'Yeshaswi wins!';
     quipEl.textContent = TAUNTS[Math.floor(Math.random()*TAUNTS.length)];
-    setTimeout(()=>{ winOverlay.style.display='grid'; cheatcam.style.display='none'; }, 500);
+    setTimeout(()=>{ winOverlay.style.display='grid'; cheatcam.style.display='none'; confetti(); buildTicker(); }, 520);
+  }
+
+  // decorative confetti
+  function confetti(){
+    for(let i=0;i<(FXHIGH?180:90);i++){
+      const x=Math.random()*W, y=Math.random()*H*.3; burst(x,y,1);
+    }
+  }
+
+  function buildTicker(){
+    tickerRow.innerHTML='';
+    const items = [...TICKER, ...TICKER];
+    for(const t of items){ const span=document.createElement('span'); span.className='pill'; span.textContent=t; tickerRow.appendChild(span); }
   }
 
   // --- Tactics ---
@@ -353,8 +441,8 @@
   }
   function cheatRotateBoard(hLine, done){
     setBubble('Reality rotates 180°', 1000); log('Reality rotation','bot');
-    boardEl.style.transition='transform .7s ease'; boardEl.style.transform='rotate(180deg)';
-    setTimeout(()=>{ boardEl.style.transform='rotate(0deg)'; done(); }, 800);
+    boardEl.style.transition='transform .75s ease'; boardEl.style.transform='rotate(180deg)';
+    setTimeout(()=>{ boardEl.style.transform='rotate(0deg)'; done(); }, 820);
   }
   function cheatStealCenter(hLine, done){
     const c=4; setBubble('Center is property of Yeshaswi', 1200); log('Center stolen','bot');
@@ -362,9 +450,23 @@
   }
   function cheatLightningStrike(hLine, done){
     setBubble('Lightning strike incoming ⚡', 1200); log('Lightning strike','bot');
-    document.body.classList.add('shake'); setTimeout(()=>document.body.classList.remove('shake'), 600);
+    document.body.classList.add('shake'); setTimeout(()=>document.body.classList.remove('shake'), 640);
     const cellIndex = (hLine && hLine[1]) || 4; pulseCell(cellIndex); burstAtCell(cellIndex);
-    setTimeout(()=>{ state.board[cellIndex]=state.bot; updateBoard(); done(); }, 700);
+    setTimeout(()=>{ state.board[cellIndex]=state.bot; updateBoard(); done(); }, 720);
+  }
+  function cheatMatrixRain(hLine, done){
+    setBubble('Matrix rain protocol', 1200); log('Matrix rain','bot');
+    const rain=document.createElement('div'); rain.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:49;mix-blend-mode:screen;';
+    const cvs=document.createElement('canvas'); rain.appendChild(cvs); document.body.appendChild(rain);
+    const rctx=cvs.getContext('2d'); cvs.width=W; cvs.height=H; const cols=Math.floor(W/14); const y=Array(cols).fill(0);
+    let frames=0; (function draw(){ rctx.fillStyle='rgba(0,0,0,0.08)'; rctx.fillRect(0,0,W,H); rctx.fillStyle='#22d3ee'; rctx.font='14px monospace'; y.forEach((v,i)=>{ const txt=Math.random()>0.5?'1':'0'; rctx.fillText(txt,i*14,v); y[i]= v>H || Math.random()>0.975 ? 0 : v+14; }); if(frames++<45) requestAnimationFrame(draw); else { document.body.removeChild(rain); done(); }})();
+  }
+  function cheatGlitchClone(hLine, done){
+    setBubble('Glitch cloning tiles', 1200); log('Glitch clone','bot');
+    // Clone a random row visually then collapse
+    const row = [0,1,2, 3,4,5, 6,7,8].slice((Math.floor(Math.random()*3))*3, (Math.floor(Math.random()*3))*3+3);
+    row.forEach(i=>{ const el=boardEl.children[i]; el.animate([{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}],{duration:400}); });
+    setTimeout(done, 620);
   }
 
   function checkWinner(b){
