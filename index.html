@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Tic‑Tac‑Toe — Yeshaswi Cheat Edition v3</title>
+<title>Tic‑Tac‑Toe — Yeshaswi Cheat Edition v4 (Responsive + Cinematic)</title>
 <style>
   :root{
     --bg:#050910; --panel:#0b1326; --muted:#94a3b8; --fg:#eaf1ff; --primary:#7aa7ff; --accent:#22d3ee; --hot:#ff7ab6; --warn:#fde047;
@@ -12,12 +12,10 @@
   *{box-sizing:border-box}
   html,body{height:100%}
   body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial; color:var(--fg);
-       background:
-         radial-gradient(1400px 800px at 10% -10%,#0d1730 0,#050910 45%),
-         linear-gradient(180deg,#050910,#03060c 40%);
-       overflow:hidden;}
+       background:radial-gradient(1400px 800px at 10% -10%,#0d1730 0,#050910 45%), linear-gradient(180deg,#050910,#03060c 40%);
+       overflow-x:hidden; overflow-y:auto;}
 
-  /* Subtle animated grid background */
+  /* Animated grid background */
   .bggrid{position:fixed; inset:0; background:
       linear-gradient(transparent 95%, rgba(34,211,238,.1) 96%),
       linear-gradient(90deg, transparent 95%, rgba(34,211,238,.1) 96%);
@@ -26,32 +24,32 @@
   @keyframes gridmove{to{background-position: 0 52px, 52px 0}}
 
   .wrap{position:relative; display:grid; grid-template-columns: 1fr 360px; gap:18px; width:min(1240px,96vw); margin:24px auto; align-items:start; z-index:2}
-  header{grid-column:1/-1; display:flex; align-items:center; justify-content:space-between}
+  header{grid-column:1/-1; display:flex; align-items:center; justify-content:space-between; gap:12px}
   h1{margin:8px 0 0; font-size:clamp(22px,3.5vw,36px)}
   .sub{color:var(--muted); font-size:14px}
 
   .card{background:linear-gradient(180deg,#0b1224,#091325); border:1px solid rgba(255,255,255,.09); border-radius:var(--br); box-shadow:var(--shadow); padding:16px}
   .board{display:grid; grid-template-columns:repeat(3,1fr); gap:14px; width:min(600px,92vw); margin:12px auto}
-  .cell{aspect-ratio:1/1; background:#0b162c; border:1px solid rgba(255,255,255,.1); border-radius:20px; display:grid; place-items:center; font-weight:900; cursor:pointer; position:relative;
+  .cell{aspect-ratio:1/1; background:#0b162c; border:1px solid rgba(255,255,255,.1); border-radius:20px; display:grid; place-items:center; font-weight:900; cursor:pointer; position:relative; isolation:isolate;
         transition: transform .08s ease, filter .2s ease, box-shadow .2s ease}
   .cell:hover{transform:translateY(-1px)}
   .cell.x span{color:#a9c9ff}
   .cell.o span{color:#34d399}
-  .cell span{font-size:clamp(50px,10vw,78px)}
+  .cell span{font-size:clamp(50px,12vw,78px)}
   .cell.pulse{box-shadow:0 0 0 2px #60a5fa44, 0 0 0 10px #22d3ee22}
   .cell.flash{animation:flash .5s ease 2}
   @keyframes flash{50%{filter:brightness(2) saturate(1.4)}}
 
-  /* Right panel: Event log + Cheat toggles */
+  /* Right panel: Event log + toggles */
   .side{position:sticky; top:18px}
-  .log{height:700px; overflow:auto; scrollbar-width:thin;}
+  .log{max-height:700px; overflow:auto; scrollbar-width:thin;}
   .log h3{margin:0 0 10px}
   .log ul{list-style:none; padding:0; margin:0}
   .log li{font-size:13px; color:#d8e6ff; padding:8px 10px; border-left:3px solid transparent; margin:0 0 8px; background:#0e1a33; border-radius:12px}
   .log li.bot{border-color:#7aa7ff}
   .log li.human{border-color:#34d399}
   .tog{display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin:12px 0 6px}
-  .chip{font-size:12px; padding:6px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.1); background:#0e1a33; color:#cfe2ff}
+  .chip{font-size:12px; padding:6px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.1); background:#0e1a33; color:#cfe2ff; cursor:pointer}
 
   /* Start overlay */
   .overlay{position:fixed; inset:0; display:grid; place-items:center; background:rgba(2,6,23,.75); backdrop-filter:blur(4px); z-index:40}
@@ -75,7 +73,7 @@
   .bar>i{display:block; height:100%; width:0; background:linear-gradient(90deg,#22d3ee,#7aa7ff,#22d3ee); box-shadow:0 0 18px #22d3eeAA inset; transition:width .35s ease}
   .steps{display:flex; gap:6px; flex-wrap:wrap}
   .tag{font-size:11px; color:#cfe2ff; padding:6px 8px; background:#0b1220; border:1px solid rgba(255,255,255,.12); border-radius:999px}
-  .ring{--sz:76px; position:absolute; top:-12px; right:-12px; width:var(--sz); height:var(--sz); border-radius:50%; background:conic-gradient(#22d3ee 0,var(--p), transparent 0 360deg);}
+  .ring{--sz:76px; position:absolute; top:-12px; right:-12px; width:var(--sz); height:var(--sz); border-radius:50%; background:conic-gradient(#22d3ee 0,var(--p), transparent 0 360deg);} 
   .ring:after{content:""; position:absolute; inset:7px; border-radius:50%; background:#0f1a35}
 
   /* Big Taunt */
@@ -84,7 +82,7 @@
   .botface{width:120px; height:120px; border-radius:50%; display:grid; place-items:center; margin:0 auto 16px; background:conic-gradient(from 0deg, #7aa7ff, #22d3ee, #7aa7ff); filter:drop-shadow(0 12px 26px rgba(34,211,238,.25))}
   .botface span{background:#0b1220; width:100px; height:100px; border-radius:50%; display:grid; place-items:center; font-weight:900}
   .quip{color:#cfe2ff; margin:10px 0 16px; font-size:clamp(18px,2.6vw,24px)}
-  .cta{display:flex; gap:10px; justify-content:center}
+  .cta{display:flex; gap:10px; justify-content:center; flex-wrap:wrap}
   .ticker{overflow:hidden; mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); margin:10px 0}
   .ticker .row{display:flex; gap:20px; white-space:nowrap; animation:marq 20s linear infinite}
   .pill{border:1px solid rgba(255,255,255,.14); border-radius:999px; padding:8px 12px; font-size:14px; color:#dbe7ff; background:#0e1a33}
@@ -110,16 +108,44 @@
   .scan i:nth-child(2){animation-delay:.1s}
   .scan i:nth-child(3){animation-delay:.2s}
   @keyframes scan{50%{opacity:.3; transform:scaleX(.6)}}
+
+  /* CRT overlay for dramatic cheats */
+  .crt{position:fixed; inset:0; pointer-events:none; z-index:48; background:
+    repeating-linear-gradient( to bottom, #0000 0 2px, #ffffff07 2px 3px),
+    radial-gradient(ellipse at center, #0000 60%, #0006 100% ); display:none}
+
+  /* Responsive tweaks */
+  @media (max-width: 1024px){
+    .wrap{grid-template-columns:1fr;}
+    .side{order:3}
+    .cheatcam{right:10px; bottom:10px; width:94vw}
+    .board{width:96vw}
+  }
+  @media (max-width: 520px){
+    h1{font-size:22px}
+    .chip{font-size:11px}
+    .cell span{font-size:clamp(44px,18vw,70px)}
+    .winner .panel{width:96vw; padding:18px}
+    .botface{width:96px; height:96px}
+    .botface span{width:82px; height:82px}
+  }
 </style>
 </head>
 <body>
 <div class="bggrid"></div>
 <canvas id="fx"></canvas>
+<div id="crt" class="crt"></div>
 <div class="wrap">
   <header>
     <div>
       <h1>🤖 Tic‑Tac‑Toe — Bot: <b>Yeshaswi</b></h1>
-      <div class="sub">Pick <b>X</b> or <b>O</b> to start instantly. Watch the <b>CheatCam</b> & global banners when things get… unfair. 😈</div>
+      <div class="sub">Pick <b>X</b> or <b>O</b> to start instantly. Built mobile‑first; watch the <b>CheatCam</b> light up when things get… unfair. 😈</div>
+    </div>
+    <div class="tog" style="justify-content:flex-end">
+      <span class="chip" id="sfxToggle">🔊 SFX: ON</span>
+      <span class="chip" id="fxToggle">✨ FX: HIGH</span>
+      <span class="chip" id="logToggle">📜 Log: SHOW</span>
+      <span class="chip" id="voiceToggle">🗣️ Voice: OFF</span>
     </div>
   </header>
 
@@ -129,12 +155,8 @@
     <div class="status"><div id="statusText" class="text">Choose your symbol to begin.</div></div>
   </div>
 
-  <!-- Right: Event Log + toggles -->
-  <aside class="card side">
-    <div class="tog">
-      <span class="chip" id="sfxToggle">🔊 SFX: ON</span>
-      <span class="chip" id="fxToggle">✨ FX: HIGH</span>
-    </div>
+  <!-- Right: Event Log -->
+  <aside class="card side" id="sidePanel">
     <div class="log">
       <h3>📜 Event Log</h3>
       <ul id="log"></ul>
@@ -207,13 +229,19 @@
   const banner = document.getElementById('banner');
   const patchNameEl = document.getElementById('patchName');
   const tickerRow = document.getElementById('tickerRow');
+  const sidePanel = document.getElementById('sidePanel');
+  const logToggle = document.getElementById('logToggle');
   const sfxToggle = document.getElementById('sfxToggle');
   const fxToggle = document.getElementById('fxToggle');
+  const voiceToggle = document.getElementById('voiceToggle');
+  const crt = document.getElementById('crt');
 
-  const fx = document.getElementById('fx');
-  const ctx = fx.getContext('2d');
-  let W=innerWidth,H=innerHeight; fx.width=W; fx.height=H;
-  addEventListener('resize',()=>{W=innerWidth;H=innerHeight;fx.width=W;fx.height=H});
+  const fx = document.createElement('canvas');
+  // use existing canvas for particles
+  const fxBG = document.getElementById('fx');
+  const ctx = fxBG.getContext('2d');
+  let W=innerWidth,H=innerHeight; fxBG.width=W; fxBG.height=H;
+  addEventListener('resize',()=>{W=innerWidth;H=innerHeight;fxBG.width=W;fxBG.height=H});
 
   const WIN_LINES = [ [0,1,2],[3,4,5],[6,7,8], [0,3,6],[1,4,7],[2,5,8], [0,4,8],[2,4,6] ];
 
@@ -235,44 +263,36 @@
     "Your win was flagged by QA. Rejected.",
     "404: Human victory not found.",
     "Access denied: fun detected.",
-    "I make the bugs on purpose."
+    "I make the bugs on purpose.",
+    "Speedrun any%: bullying humans.",
+    "Achievement unlocked: Hope Crusher.",
+    "Skill issue detected. Reboot yourself."
   ];
 
   const TICKER = [
-    'Deploying hotfix', 'Rolling back your move', 'Patching parity bits', 'Encrypting your victory', 'Spoofing RNG seed', 'Forging checksum', 'Upgrading ego drivers'
+    'Deploying hotfix', 'Rolling back your move', 'Patching parity bits', 'Encrypting your victory', 'Spoofing RNG seed', 'Forging checksum', 'Upgrading ego drivers', 'Rotating luck cache', 'Gaslighting board state'
   ];
 
   // --- Toggles ---
-  let SFX=true; let FXHIGH=true;
+  let SFX=true; let FXHIGH=true; let VOICE=false; let LOGSHOW=true;
   sfxToggle.onclick=()=>{ SFX=!SFX; sfxToggle.textContent = `🔊 SFX: ${SFX?'ON':'OFF'}`; };
   fxToggle.onclick=()=>{ FXHIGH=!FXHIGH; fxToggle.textContent = `✨ FX: ${FXHIGH?'HIGH':'LOW'}`; };
+  voiceToggle.onclick=()=>{ VOICE=!VOICE; voiceToggle.textContent = `🗣️ Voice: ${VOICE?'ON':'OFF'}`; };
+  logToggle.onclick=()=>{ LOGSHOW=!LOGSHOW; sidePanel.style.display=LOGSHOW?'block':'none'; logToggle.textContent=`📜 Log: ${LOGSHOW?'SHOW':'HIDE'}`; };
 
   // --- Utility UI helpers ---
   function log(msg, who='bot'){
+    if(!LOGSHOW) return;
     const li=document.createElement('li'); li.className=who; li.textContent=msg; logEl.prepend(li);
   }
   function setBubble(text, ms=1200){ bubble.textContent=text; bubble.style.display='block'; setTimeout(()=> bubble.style.display='none', ms); }
-  function beep(freq=440, dur=0.08){
-    if(!SFX) return;
-    try{
-      const ac = new (window.AudioContext||window.webkitAudioContext)();
-      const o = ac.createOscillator(); const g = ac.createGain();
-      o.type='square'; o.frequency.value=freq; o.connect(g); g.connect(ac.destination); g.gain.setValueAtTime(.07, ac.currentTime);
-      o.start(); o.stop(ac.currentTime+dur);
-    }catch(e){}
-  }
+  function speak(text){ if(!VOICE) return; try{ const u=new SpeechSynthesisUtterance(text); u.rate=1.05; speechSynthesis.speak(u);}catch(e){} }
+  function beep(freq=440, dur=0.08){ if(!SFX) return; try{ const ac = new (window.AudioContext||window.webkitAudioContext)(); const o = ac.createOscillator(); const g = ac.createGain(); o.type='square'; o.frequency.value=freq; o.connect(g); g.connect(ac.destination); g.gain.setValueAtTime(.07, ac.currentTime); o.start(); o.stop(ac.currentTime+dur);}catch(e){} }
   function pulseCell(i){ const c=boardEl.children[i]; c.classList.add('pulse'); setTimeout(()=>c.classList.remove('pulse'),500); }
 
   // Particles
-  const parts=[]; function burst(x,y,n=FXHIGH?90:50){
-    for(let i=0;i<n;i++) parts.push({x,y, vx:(Math.random()-.5)*6, vy:(Math.random()-.5)*6, life: 60+Math.random()*40});
-  }
-  function tickFX(){
-    ctx.clearRect(0,0,W,H);
-    parts.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; p.vy+=.03; p.life-=1; ctx.globalAlpha=Math.max(p.life/120,0); ctx.fillStyle='white'; ctx.fillRect(p.x,p.y,2,2); });
-    for(let i=parts.length-1;i>=0;i--) if(parts[i].life<=0) parts.splice(i,1);
-    requestAnimationFrame(tickFX);
-  } tickFX();
+  const parts=[]; function burst(x,y,n=FXHIGH?100:60){ for(let i=0;i<n;i++) parts.push({x,y, vx:(Math.random()-.5)*6, vy:(Math.random()-.5)*6, life: 60+Math.random()*40}); }
+  function tickFX(){ ctx.clearRect(0,0,W,H); parts.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; p.vy+=.03; p.life-=1; ctx.globalAlpha=Math.max(p.life/120,0); ctx.fillStyle='white'; ctx.fillRect(p.x,p.y,2,2); }); for(let i=parts.length-1;i>=0;i--) if(parts[i].life<=0) parts.splice(i,1); requestAnimationFrame(tickFX); } tickFX();
 
   function init(){
     boardEl.innerHTML='';
@@ -372,11 +392,11 @@
     let p=0; const tID = setInterval(()=>{ if(p<100){ p+=Math.random()*(FXHIGH?26:18); barfill.style.width=Math.min(p,100)+'%'; ring.style.setProperty('--p', Math.min(p,100)*3.6+'deg'); } }, 180);
     steps.forEach((s,i)=> setTimeout(()=> addTag(s), 280*i));
 
-    // choose a flashy tactic (now with two new ones)
-    const tactics = [cheatSwapTile, cheatTimeRewind, cheatTeleport, cheatRotateBoard, cheatStealCenter, cheatLightningStrike, cheatMatrixRain, cheatGlitchClone];
+    // choose a flashy tactic (added more)
+    const tactics = [cheatSwapTile, cheatTimeRewind, cheatTeleport, cheatRotateBoard, cheatStealCenter, cheatLightningStrike, cheatMatrixRain, cheatGlitchClone, cheatShuffleBoard, cheatEmojiRain, cheatCRTGlitch];
     const tactic = tactics[Math.floor(Math.random()*tactics.length)];
-    setBubble('Cheat module: '+tactic.name.replace('cheat',''), 1400);
-    log('Cheat activated: '+tactic.name.replace('cheat',''),'bot');
+    const name=tactic.name.replace('cheat','');
+    setBubble('Cheat module: '+name, 1400); speak(`Activating ${name}`); log('Cheat activated: '+name,'bot');
 
     setTimeout(()=> tactic(humanLine, ()=>{
       clearInterval(tID); barfill.style.width='100%'; ring.style.setProperty('--p','360deg');
@@ -397,82 +417,32 @@
   function burstAtCell(i){ const rect=boardEl.children[i].getBoundingClientRect(); burst(rect.left+rect.width/2, rect.top+rect.height/2); }
 
   function celebrate(){
+    const msg = TAUNTS[Math.floor(Math.random()*TAUNTS.length)];
     statusEl.textContent = 'Yeshaswi wins!';
-    quipEl.textContent = TAUNTS[Math.floor(Math.random()*TAUNTS.length)];
+    quipEl.textContent = msg;
+    speak(msg);
     setTimeout(()=>{ winOverlay.style.display='grid'; cheatcam.style.display='none'; confetti(); buildTicker(); }, 520);
   }
 
   // decorative confetti
-  function confetti(){
-    for(let i=0;i<(FXHIGH?180:90);i++){
-      const x=Math.random()*W, y=Math.random()*H*.3; burst(x,y,1);
-    }
-  }
+  function confetti(){ for(let i=0;i<(FXHIGH?200:100);i++){ const x=Math.random()*W, y=Math.random()*H*.3; burst(x,y,1); } }
 
-  function buildTicker(){
-    tickerRow.innerHTML='';
-    const items = [...TICKER, ...TICKER];
-    for(const t of items){ const span=document.createElement('span'); span.className='pill'; span.textContent=t; tickerRow.appendChild(span); }
-  }
+  function buildTicker(){ tickerRow.innerHTML=''; const items = [...TICKER, ...TICKER]; for(const t of items){ const span=document.createElement('span'); span.className='pill'; span.textContent=t; tickerRow.appendChild(span); } }
 
   // --- Tactics ---
-  function cheatSwapTile(hLine, done){
-    if(hLine){
-      const pick = hLine[Math.floor(Math.random()*hLine.length)];
-      const cell = boardEl.children[pick];
-      cell.classList.add('flash');
-      setBubble('Swapping your tile…', 900); log('Swap executed on cell '+(pick+1),'bot');
-      setTimeout(()=>{ state.board[pick]=state.bot; updateBoard(); done(); }, 700);
-    } else done();
-  }
-  function cheatTimeRewind(hLine, done){
-    setBubble('Time rewind −2 moves', 1000); log('Time rewind sequence','bot');
-    const lastTwo = [];
-    for(let i=8;i>=0 && lastTwo.length<2;i--){ if(state.board[i]===state.human) lastTwo.push(i); }
-    lastTwo.forEach(i=> boardEl.children[i].classList.add('flash'));
-    setTimeout(()=>{ lastTwo.forEach(i=> state.board[i]=null); updateBoard(); done(); }, 800);
-  }
-  function cheatTeleport(hLine, done){
-    const targetLine = hLine || WIN_LINES[Math.floor(Math.random()*WIN_LINES.length)];
-    const target = targetLine.find(i=>!state.board[i]) ?? targetLine[0];
-    setBubble('Teleporting bot piece ➜ cell '+(target+1), 1000); log('Teleport to cell '+(target+1),'bot');
-    const el=boardEl.children[target]; el.classList.add('flash');
-    setTimeout(()=>{ state.board[target]=state.bot; updateBoard(); done(); }, 600);
-  }
-  function cheatRotateBoard(hLine, done){
-    setBubble('Reality rotates 180°', 1000); log('Reality rotation','bot');
-    boardEl.style.transition='transform .75s ease'; boardEl.style.transform='rotate(180deg)';
-    setTimeout(()=>{ boardEl.style.transform='rotate(0deg)'; done(); }, 820);
-  }
-  function cheatStealCenter(hLine, done){
-    const c=4; setBubble('Center is property of Yeshaswi', 1200); log('Center stolen','bot');
-    boardEl.children[c].classList.add('flash'); setTimeout(()=>{ state.board[c]=state.bot; updateBoard(); done(); }, 600);
-  }
-  function cheatLightningStrike(hLine, done){
-    setBubble('Lightning strike incoming ⚡', 1200); log('Lightning strike','bot');
-    document.body.classList.add('shake'); setTimeout(()=>document.body.classList.remove('shake'), 640);
-    const cellIndex = (hLine && hLine[1]) || 4; pulseCell(cellIndex); burstAtCell(cellIndex);
-    setTimeout(()=>{ state.board[cellIndex]=state.bot; updateBoard(); done(); }, 720);
-  }
-  function cheatMatrixRain(hLine, done){
-    setBubble('Matrix rain protocol', 1200); log('Matrix rain','bot');
-    const rain=document.createElement('div'); rain.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:49;mix-blend-mode:screen;';
-    const cvs=document.createElement('canvas'); rain.appendChild(cvs); document.body.appendChild(rain);
-    const rctx=cvs.getContext('2d'); cvs.width=W; cvs.height=H; const cols=Math.floor(W/14); const y=Array(cols).fill(0);
-    let frames=0; (function draw(){ rctx.fillStyle='rgba(0,0,0,0.08)'; rctx.fillRect(0,0,W,H); rctx.fillStyle='#22d3ee'; rctx.font='14px monospace'; y.forEach((v,i)=>{ const txt=Math.random()>0.5?'1':'0'; rctx.fillText(txt,i*14,v); y[i]= v>H || Math.random()>0.975 ? 0 : v+14; }); if(frames++<45) requestAnimationFrame(draw); else { document.body.removeChild(rain); done(); }})();
-  }
-  function cheatGlitchClone(hLine, done){
-    setBubble('Glitch cloning tiles', 1200); log('Glitch clone','bot');
-    // Clone a random row visually then collapse
-    const row = [0,1,2, 3,4,5, 6,7,8].slice((Math.floor(Math.random()*3))*3, (Math.floor(Math.random()*3))*3+3);
-    row.forEach(i=>{ const el=boardEl.children[i]; el.animate([{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}],{duration:400}); });
-    setTimeout(done, 620);
-  }
+  function cheatSwapTile(hLine, done){ if(hLine){ const pick = hLine[Math.floor(Math.random()*hLine.length)]; const cell = boardEl.children[pick]; cell.classList.add('flash'); setBubble('Swapping your tile…', 900); log('Swap executed on cell '+(pick+1),'bot'); setTimeout(()=>{ state.board[pick]=state.bot; updateBoard(); done(); }, 700); } else done(); }
+  function cheatTimeRewind(hLine, done){ setBubble('Time rewind −2 moves', 1000); log('Time rewind sequence','bot'); const lastTwo = []; for(let i=8;i>=0 && lastTwo.length<2;i--){ if(state.board[i]===state.human) lastTwo.push(i); } lastTwo.forEach(i=> boardEl.children[i].classList.add('flash')); setTimeout(()=>{ lastTwo.forEach(i=> state.board[i]=null); updateBoard(); done(); }, 800); }
+  function cheatTeleport(hLine, done){ const targetLine = hLine || WIN_LINES[Math.floor(Math.random()*WIN_LINES.length)]; const target = targetLine.find(i=>!state.board[i]) ?? targetLine[0]; setBubble('Teleporting bot piece ➜ cell '+(target+1), 1000); log('Teleport to cell '+(target+1),'bot'); const el=boardEl.children[target]; el.classList.add('flash'); setTimeout(()=>{ state.board[target]=state.bot; updateBoard(); done(); }, 600); }
+  function cheatRotateBoard(hLine, done){ setBubble('Reality rotates 180°', 1000); log('Reality rotation','bot'); boardEl.style.transition='transform .75s ease'; boardEl.style.transform='rotate(180deg)'; setTimeout(()=>{ boardEl.style.transform='rotate(0deg)'; done(); }, 820); }
+  function cheatStealCenter(hLine, done){ const c=4; setBubble('Center is property of Yeshaswi', 1200); log('Center stolen','bot'); boardEl.children[c].classList.add('flash'); setTimeout(()=>{ state.board[c]=state.bot; updateBoard(); done(); }, 600); }
+  function cheatLightningStrike(hLine, done){ setBubble('Lightning strike incoming ⚡', 1200); log('Lightning strike','bot'); document.body.classList.add('shake'); setTimeout(()=>document.body.classList.remove('shake'), 640); const cellIndex = (hLine && hLine[1]) || 4; pulseCell(cellIndex); burstAtCell(cellIndex); setTimeout(()=>{ state.board[cellIndex]=state.bot; updateBoard(); done(); }, 720); }
+  function cheatMatrixRain(hLine, done){ setBubble('Matrix rain protocol', 1200); log('Matrix rain','bot'); const rain=document.createElement('div'); rain.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:49;mix-blend-mode:screen;'; const cvs=document.createElement('canvas'); rain.appendChild(cvs); document.body.appendChild(rain); const rctx=cvs.getContext('2d'); cvs.width=W; cvs.height=H; const cols=Math.floor(W/14); const y=Array(cols).fill(0); let frames=0; (function draw(){ rctx.fillStyle='rgba(0,0,0,0.08)'; rctx.fillRect(0,0,W,H); rctx.fillStyle='#22d3ee'; rctx.font='14px monospace'; y.forEach((v,i)=>{ const txt=Math.random()>0.5?'1':'0'; rctx.fillText(txt,i*14,v); y[i]= v>H || Math.random()>0.975 ? 0 : v+14; }); if(frames++<45) requestAnimationFrame(draw); else { document.body.removeChild(rain); done(); }})(); }
+  function cheatGlitchClone(hLine, done){ setBubble('Glitch cloning tiles', 1200); log('Glitch clone','bot'); const rowStart = [0,3,6][Math.floor(Math.random()*3)]; const row = [rowStart,rowStart+1,rowStart+2]; row.forEach(i=>{ const el=boardEl.children[i]; el.animate([{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}],{duration:400}); }); setTimeout(done, 620); }
+  function cheatShuffleBoard(hLine, done){ setBubble('Shuffling reality...', 1200); log('Board shuffle','bot'); const cells=[...boardEl.children]; cells.forEach((el,k)=> el.style.zIndex=10+k); boardEl.animate([{transform:'scale(.96) rotate(-2deg)'},{transform:'scale(1) rotate(0deg)'}],{duration:600}); setTimeout(done, 650); }
+  function cheatEmojiRain(hLine, done){ setBubble('Deploying 😈 pack', 1200); log('Emoji rain','bot'); const layer=document.createElement('div'); layer.style.cssText='position:fixed;inset:0;z-index:49;pointer-events:none;'; document.body.appendChild(layer); const em=['😈','🤖','💥','⚡','🧪','🕹️']; let n=0; const id=setInterval(()=>{ const s=document.createElement('div'); s.textContent=em[Math.floor(Math.random()*em.length)]; s.style.cssText=`position:absolute;left:${Math.random()*100}vw;top:-10vh;font-size:${Math.random()*24+20}px;filter:drop-shadow(0 2px 6px #000);`; layer.appendChild(s); s.animate([{transform:'translateY(0)'},{transform:'translateY(120vh)'}],{duration:1500+Math.random()*800, easing:'ease-in'}); if(++n>40){ clearInterval(id); setTimeout(()=>document.body.removeChild(layer), 1200); done(); } }, 40); }
+  function cheatCRTGlitch(hLine, done){ setBubble('CRT glitch engaged', 1200); log('CRT glitch','bot'); crt.style.display='block'; crt.animate([{opacity:0},{opacity:1},{opacity:0}],{duration:900}); setTimeout(()=>{ crt.style.display='none'; done(); }, 900); }
 
-  function checkWinner(b){
-    for(const L of WIN_LINES){ const [a,b1,c]=L; const A=b[a],B=b[b1],C=b[c]; if(A && A===B && B===C) return {winner:A,line:L}; }
-    return {winner:null,line:null};
-  }
+  function checkWinner(b){ for(const L of WIN_LINES){ const [a,b1,c]=L; const A=b[a],B=b[b1],C=b[c]; if(A && A===B && B===C) return {winner:A,line:L}; } return {winner:null,line:null}; }
   function isFull(b){ return b.every(Boolean); }
 
   init();
