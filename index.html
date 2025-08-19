@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Tic‑Tac‑Toe — Yeshaswi Cheat Edition v2</title>
+<style>
+  :root{
+    --bg:#060912; --panel:#0c1324; --muted:#93a0b8; --fg:#eef2ff; --primary:#7aa7ff; --accent:#22d3ee; --hot:#ff7ab6; --warn:#fde047;
+    --br:20px; --shadow:0 20px 60px rgba(0,0,0,.5);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial; color:var(--fg);
+       background:radial-gradient(1600px 900px at 20% -10%,#0e1726 0,#060912 45%),linear-gradient(180deg,#060912,#05070e 40%);
+       overflow:hidden;}
+  .wrap{position:relative; display:grid; grid-template-columns: 1fr 320px; gap:16px; width:min(1200px,96vw); margin:20px auto; align-items:start}
+  header{grid-column:1/-1; display:flex; align-items:center; justify-content:space-between}
+  h1{margin:8px 0 0; font-size:clamp(22px,3.5vw,34px)}
+  .sub{color:var(--muted); font-size:14px}
+
+  .card{background:linear-gradient(180deg,#0b1020,#0a0f1d); border:1px solid rgba(255,255,255,.08); border-radius:var(--br); box-shadow:var(--shadow); padding:16px}
+  .board{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; width:min(560px,92vw); margin:12px auto}
+  .cell{aspect-ratio:1/1; background:#0d1628; border:1px solid rgba(255,255,255,.08); border-radius:18px; display:grid; place-items:center; font-weight:900; cursor:pointer; position:relative;
+        transition: transform .08s ease, filter .2s ease, box-shadow .2s ease}
+  .cell:hover{transform:translateY(-1px)}
+  .cell.x span{color:#9cc2ff}
+  .cell.o span{color:#34d399}
+  .cell span{font-size:clamp(46px,10vw,76px)}
+  .cell.pulse{box-shadow:0 0 0 2px #60a5fa44, 0 0 0 8px #22d3ee22}
+  .cell.flash{animation:flash .5s ease 2}
+  @keyframes flash{50%{filter:brightness(2) saturate(1.4)}}
+
+  /* Right panel: Event log */
+  .log{height:640px; overflow:auto; scrollbar-width:thin;}
+  .log h3{margin:0 0 10px}
+  .log ul{list-style:none; padding:0; margin:0}
+  .log li{font-size:13px; color:#cfe2ff; padding:8px 10px; border-left:3px solid transparent; margin:0 0 8px; background:#0d1628; border-radius:10px}
+  .log li.bot{border-color:#7aa7ff}
+  .log li.human{border-color:#34d399}
+
+  /* Start overlay */
+  .overlay{position:fixed; inset:0; display:grid; place-items:center; background:rgba(2,6,23,.75); backdrop-filter:blur(4px); z-index:40}
+  .sheet{background:linear-gradient(180deg,#0b1020,#0a0f1d); border:1px solid rgba(255,255,255,.08); border-radius:24px; padding:20px; width:min(560px,92vw); box-shadow:var(--shadow)}
+  .row{display:flex; gap:12px; flex-wrap:wrap; align-items:center; justify-content:center}
+  .btn{appearance:none; border:none; border-radius:12px; padding:12px 16px; background:#101a2e; color:var(--fg); border:1px solid rgba(255,255,255,.1); cursor:pointer; font-weight:800}
+  .btn.primary{background:linear-gradient(135deg,#2563eb,#60a5fa); border:none}
+
+  .status{display:flex; align-items:center; justify-content:center; gap:10px; margin:6px auto 0; width:min(560px,92vw)}
+  .status .text{color:#c7d2fe}
+
+  .win{animation:glow 900ms ease-in-out infinite alternate}
+  @keyframes glow{to{box-shadow:0 0 0 2px rgba(99,102,241,.25), 0 10px 30px rgba(99,102,241,.25);}}
+
+  /* CheatCam */
+  .cheatcam{position:fixed; right:18px; bottom:18px; width:min(420px,90vw); z-index:45}
+  .cheatcam .hud{background:linear-gradient(180deg,#10172a,#0a0f1d); border:1px solid rgba(255,255,255,.1); border-radius:18px; box-shadow:var(--shadow); padding:12px}
+  .hud .title{display:flex; align-items:center; gap:8px; font-weight:900}
+  .led{width:10px; height:10px; border-radius:50%; background:#ef4444; box-shadow:0 0 12px #ef4444aa}
+  .bar{height:8px; background:#0f172a; border-radius:10px; margin:10px 0; overflow:hidden}
+  .bar>i{display:block; height:100%; width:0; background:linear-gradient(90deg,#22d3ee,#7aa7ff,#22d3ee); box-shadow:0 0 18px #22d3eeAA inset; transition:width .4s ease}
+  .steps{display:flex; gap:6px; flex-wrap:wrap}
+  .tag{font-size:11px; color:#cfe2ff; padding:6px 8px; background:#0b1220; border:1px solid rgba(255,255,255,.08); border-radius:999px}
+
+  /* Big Taunt */
+  .winner{position:fixed; inset:0; display:none; place-items:center; z-index:60}
+  .winner .panel{background:radial-gradient(800px 400px at 50% -10%,#0b1329,#060912 50%); border:1px solid rgba(255,255,255,.08); border-radius:24px; padding:22px; width:min(780px,94vw); text-align:center; box-shadow:0 40px 120px rgba(0,0,0,.6)}
+  .botface{width:100px; height:100px; border-radius:50%; display:grid; place-items:center; margin:0 auto 14px; background:conic-gradient(from 0deg, #7aa7ff, #22d3ee, #7aa7ff); filter:drop-shadow(0 12px 24px rgba(34,211,238,.25))}
+  .botface span{background:#0b1220; width:86px; height:86px; border-radius:50%; display:grid; place-items:center; font-weight:900}
+  .quip{color:#bcd0ff; margin:10px 0 14px; font-size:clamp(16px,2.4vw,22px)}
+  .cta{display:flex; gap:10px; justify-content:center}
+
+  /* Particles canvas sits behind */
+  canvas#fx{position:fixed; inset:0; pointer-events:none; z-index:5}
+
+  /* Vignette + screen shake */
+  .vignette:before{content:""; position:fixed; inset:0; pointer-events:none; box-shadow:inset 0 0 200px rgba(0,0,0,.6); z-index:6}
+  .shake{animation:shake .5s ease}
+  @keyframes shake{10%,90%{transform:translate(-2px,-1px)} 20%,80%{transform:translate(3px,1px)} 30%,50%,70%{transform:translate(-6px,2px)} 40%,60%{transform:translate(6px,-2px)}}
+
+  /* Floating chat bubble taunts */
+  .bubble{position:fixed; left:50%; transform:translateX(-50%); bottom:110px; background:#0b1220; border:1px solid rgba(255,255,255,.08); padding:10px 12px; border-radius:14px; color:#dbe7ff; font-size:14px; z-index:55}
+</style>
+</head>
+<body>
+<canvas id="fx"></canvas>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>🤖 Tic‑Tac‑Toe — Bot: <b>Yeshaswi</b></h1>
+      <div class="sub">Pick <b>X</b> or <b>O</b> to start instantly. Watch the <b>CheatCam</b> when things get… unfair. 😈</div>
+    </div>
+  </header>
+
+  <!-- Main board -->
+  <div class="card" style="position:relative">
+    <div id="board" class="board" aria-label="Tic Tac Toe board"></div>
+    <div class="status"><div id="statusText" class="text">Choose your symbol to begin.</div></div>
+  </div>
+
+  <!-- Right: Event Log -->
+  <aside class="card log">
+    <h3>📜 Event Log</h3>
+    <ul id="log"></ul>
+  </aside>
+</div>
+
+<!-- Start overlay -->
+<div id="startOverlay" class="overlay" role="dialog" aria-modal="true">
+  <div class="sheet">
+    <h2 style="margin:0 0 8px">Choose your side</h2>
+    <p class="sub" style="margin-top:0">No difficulty. No buttons. Game starts immediately.</p>
+    <div class="row">
+      <button class="btn primary" data-choose="X">I play X (first)</button>
+      <button class="btn" data-choose="O">I play O (second)</button>
+    </div>
+  </div>
+</div>
+
+<!-- CheatCam HUD -->
+<div id="cheatcam" class="cheatcam" style="display:none">
+  <div class="hud">
+    <div class="title"><span class="led" id="rec"></span><span>CheatCam • Yeshaswi syslog</span></div>
+    <div class="bar"><i id="barfill"></i></div>
+    <div class="steps" id="steps"></div>
+  </div>
+</div>
+
+<!-- Winner (taunt) overlay -->
+<div id="winOverlay" class="winner">
+  <div class="panel">
+    <div class="botface"><span>Y</span></div>
+    <h2 style="margin:6px 0 0">Yeshaswi wins. Obviously. 🏆</h2>
+    <p id="quip" class="quip">That was adorable. You almost had three in a row… until reality updated. 😉</p>
+    <div class="cta">
+      <button id="rematch" class="btn primary">Rematch</button>
+      <button id="switch" class="btn">Switch X/O</button>
+    </div>
+  </div>
+</div>
+
+<div id="bubble" class="bubble" style="display:none">Calibrating cheat modules…</div>
+
+<script>
+(() => {
+  const boardEl = document.getElementById('board');
+  const statusEl = document.getElementById('statusText');
+  const startOverlay = document.getElementById('startOverlay');
+  const winOverlay = document.getElementById('winOverlay');
+  const quipEl = document.getElementById('quip');
+  const rematchBtn = document.getElementById('rematch');
+  const switchBtn = document.getElementById('switch');
+  const logEl = document.getElementById('log');
+  const cheatcam = document.getElementById('cheatcam');
+  const barfill = document.getElementById('barfill');
+  const stepsEl = document.getElementById('steps');
+  const bubble = document.getElementById('bubble');
+
+  const fx = document.getElementById('fx');
+  const ctx = fx.getContext('2d');
+  let W=innerWidth,H=innerHeight; fx.width=W; fx.height=H;
+  addEventListener('resize',()=>{W=innerWidth;H=innerHeight;fx.width=W;fx.height=H});
+
+  const WIN_LINES = [ [0,1,2],[3,4,5],[6,7,8], [0,3,6],[1,4,7],[2,5,8], [0,4,8],[2,4,6] ];
+
+  let state = {
+    board: Array(9).fill(null),
+    human: 'X',
+    bot: 'O',
+    turn: 'X',
+    running: false,
+    cheated: false,
+  };
+
+  const TAUNTS = [
+    "Plot twist: I wrote the rules. 💅",
+    "I let you draw the line, I just… moved the canvas.",
+    "Call that a win? My timeline says otherwise.",
+    "Nice try. I patched your victory in prod.",
+    "This board has DRM. Wins require admin access.",
+    "Your win was flagged by QA. Rejected."
+  ];
+
+  // --- Utility UI helpers ---
+  function log(msg, who='bot'){
+    const li=document.createElement('li'); li.className=who; li.textContent=msg; logEl.prepend(li);
+  }
+  function setBubble(text, ms=1000){ bubble.textContent=text; bubble.style.display='block'; setTimeout(()=> bubble.style.display='none', ms); }
+  function beep(freq=440, dur=0.1){
+    try{
+      const ac = new (window.AudioContext||window.webkitAudioContext)();
+      const o = ac.createOscillator(); const g = ac.createGain();
+      o.type='square'; o.frequency.value=freq; o.connect(g); g.connect(ac.destination); g.gain.setValueAtTime(.08, ac.currentTime);
+      o.start(); o.stop(ac.currentTime+dur);
+    }catch(e){}
+  }
+  function pulseCell(i){ const c=boardEl.children[i]; c.classList.add('pulse'); setTimeout(()=>c.classList.remove('pulse'),500); }
+
+  // Particles
+  const parts=[]; function burst(x,y){
+    for(let i=0;i<80;i++) parts.push({x,y, vx:(Math.random()-.5)*6, vy:(Math.random()-.5)*6, life: 60+Math.random()*40});
+  }
+  function tickFX(){
+    ctx.clearRect(0,0,W,H);
+    parts.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; p.vy+=.03; p.life-=1; ctx.globalAlpha=Math.max(p.life/120,0); ctx.fillStyle='white'; ctx.fillRect(p.x,p.y,2,2); });
+    for(let i=parts.length-1;i>=0;i--) if(parts[i].life<=0) parts.splice(i,1);
+    requestAnimationFrame(tickFX);
+  } tickFX();
+
+  function init(){
+    boardEl.innerHTML='';
+    for(let i=0;i<9;i++){
+      const c=document.createElement('button');
+      c.className='cell'; c.setAttribute('data-i',i); c.setAttribute('aria-label',`Cell ${i+1}`);
+      c.addEventListener('click', onCellClick);
+      boardEl.appendChild(c);
+    }
+    startOverlay.addEventListener('click', (e)=>{
+      const choose = e.target.getAttribute('data-choose');
+      if(!choose) return;
+      state.human = choose; state.bot = choose==='X'?'O':'X';
+      startOverlay.style.display='none';
+      startGame();
+    });
+
+    rematchBtn.addEventListener('click', ()=>{ winOverlay.style.display='none'; document.body.classList.remove('vignette'); startGame(); });
+    switchBtn.addEventListener('click', ()=>{ winOverlay.style.display='none'; document.body.classList.remove('vignette'); state.human = state.human==='X'?'O':'X'; state.bot = state.human==='X'?'O':'X'; startGame(); });
+
+    updateBoard();
+  }
+
+  function startGame(){
+    state.board = Array(9).fill(null);
+    state.turn = 'X';
+    state.running = true;
+    state.cheated = false;
+    log('Game started • You are '+state.human+' • Bot is Yeshaswi','bot');
+    statusEl.textContent = `${state.human} vs Yeshaswi — ${state.turn===state.human?'Your':'Bot'} turn.`;
+    updateBoard();
+    if(state.turn===state.bot) setTimeout(botMove, 300);
+  }
+
+  function onCellClick(e){
+    if(!state.running) return;
+    const i=+e.currentTarget.getAttribute('data-i');
+    if(state.board[i]) return;
+    if(state.turn!==state.human) return;
+    place(i, state.human);
+    if(!state.running) return;
+    setTimeout(botMove, 350);
+  }
+
+  function place(i, player){
+    if(state.board[i]) return false;
+    state.board[i]=player; pulseCell(i); beep(player===state.human?660:440, .06);
+    state.turn = player==='X'?'O':'X';
+    updateBoard();
+
+    const res = checkWinner(state.board);
+    if(res.winner===state.human){ cheatWin(res.line); return true; }
+    if(isFull(state.board)){ cheatWin(); return true; }
+
+    statusEl.textContent = `${state.turn===state.human?'Your':'Bot'} turn…`;
+    return true;
+  }
+
+  function updateBoard(){
+    [...boardEl.children].forEach((cell,i)=>{
+      const v=state.board[i];
+      cell.className='cell';
+      if(v==='X') cell.classList.add('x');
+      if(v==='O') cell.classList.add('o');
+      cell.innerHTML = v?`<span>${v}</span>`:'';
+      if(!state.running) cell.classList.add('disabled');
+    });
+  }
+
+  function botMove(){
+    if(!state.running || state.turn!==state.bot) return;
+    const pref=[4,0,2,6,8,1,3,5,7];
+    const free = pref.filter(i=>!state.board[i]);
+    const move = free[Math.floor(Math.random()*Math.min(3, free.length))] ?? free[0];
+    log('Bot moves to cell '+(move+1),'bot');
+    place(move, state.bot);
+  }
+
+  // --- Cheating Logic with visible UI ---
+  function cheatWin(humanLine){
+    if(state.cheated) return; state.cheated = true;
+    document.body.classList.add('vignette','shake'); setTimeout(()=>document.body.classList.remove('shake'), 600);
+
+    // show CheatCam HUD
+    cheatcam.style.display='block'; stepsEl.innerHTML=''; barfill.style.width='0%';
+    const steps = [
+      'Intercepting victory packet', 'Patching game state', 'Bypassing fair‑play DRM', 'Recompiling timeline', 'Deploying hotfix: v∞'
+    ];
+    let p=0; const tID = setInterval(()=>{ if(p<100){ p+=Math.random()*22; barfill.style.width=Math.min(p,100)+'%'; } }, 200);
+    steps.forEach((s,i)=> setTimeout(()=> addTag(s), 300*i));
+
+    // choose a flashy tactic
+    const tactics = [cheatSwapTile, cheatTimeRewind, cheatTeleport, cheatRotateBoard, cheatStealCenter, cheatLightningStrike];
+    const tactic = tactics[Math.floor(Math.random()*tactics.length)];
+    setBubble('Cheat module: '+tactic.name.replace('cheat',''), 1200);
+    log('Cheat activated: '+tactic.name.replace('cheat',''),'bot');
+
+    setTimeout(()=> tactic(humanLine, ()=>{
+      clearInterval(tID); barfill.style.width='100%';
+      forceBotWin();
+      celebrate();
+    }), 1600);
+  }
+
+  function addTag(text){ const span=document.createElement('span'); span.className='tag'; span.textContent=text; stepsEl.appendChild(span); beep(520,.04); }
+
+  function forceBotWin(){
+    const bot = state.bot;
+    // find any line, force to bot
+    for(const L of WIN_LINES){ const [a,b,c]=L; state.board[a]=bot; state.board[b]=bot; state.board[c]=bot; updateBoard(); highlight(L); state.running=false; return; }
+  }
+
+  function highlight(line){ if(!line) return; line.forEach(idx=> boardEl.children[idx].classList.add('win','flash')); burstAtCell(line[1]); }
+  function burstAtCell(i){ const rect=boardEl.children[i].getBoundingClientRect(); burst(rect.left+rect.width/2, rect.top+rect.height/2); }
+
+  function celebrate(){
+    statusEl.textContent = 'Yeshaswi wins!';
+    quipEl.textContent = TAUNTS[Math.floor(Math.random()*TAUNTS.length)];
+    setTimeout(()=>{ winOverlay.style.display='grid'; cheatcam.style.display='none'; }, 500);
+  }
+
+  // --- Tactics ---
+  function cheatSwapTile(hLine, done){
+    if(hLine){
+      const pick = hLine[Math.floor(Math.random()*hLine.length)];
+      const cell = boardEl.children[pick];
+      cell.classList.add('flash');
+      setBubble('Swapping your tile…', 900); log('Swap executed on cell '+(pick+1),'bot');
+      setTimeout(()=>{ state.board[pick]=state.bot; updateBoard(); done(); }, 700);
+    } else done();
+  }
+  function cheatTimeRewind(hLine, done){
+    setBubble('Time rewind −2 moves', 1000); log('Time rewind sequence','bot');
+    const lastTwo = [];
+    for(let i=8;i>=0 && lastTwo.length<2;i--){ if(state.board[i]===state.human) lastTwo.push(i); }
+    lastTwo.forEach(i=> boardEl.children[i].classList.add('flash'));
+    setTimeout(()=>{ lastTwo.forEach(i=> state.board[i]=null); updateBoard(); done(); }, 800);
+  }
+  function cheatTeleport(hLine, done){
+    const targetLine = hLine || WIN_LINES[Math.floor(Math.random()*WIN_LINES.length)];
+    const target = targetLine.find(i=>!state.board[i]) ?? targetLine[0];
+    setBubble('Teleporting bot piece ➜ cell '+(target+1), 1000); log('Teleport to cell '+(target+1),'bot');
+    const el=boardEl.children[target]; el.classList.add('flash');
+    setTimeout(()=>{ state.board[target]=state.bot; updateBoard(); done(); }, 600);
+  }
+  function cheatRotateBoard(hLine, done){
+    setBubble('Reality rotates 180°', 1000); log('Reality rotation','bot');
+    boardEl.style.transition='transform .7s ease'; boardEl.style.transform='rotate(180deg)';
+    setTimeout(()=>{ boardEl.style.transform='rotate(0deg)'; done(); }, 800);
+  }
+  function cheatStealCenter(hLine, done){
+    const c=4; setBubble('Center is property of Yeshaswi', 1200); log('Center stolen','bot');
+    boardEl.children[c].classList.add('flash'); setTimeout(()=>{ state.board[c]=state.bot; updateBoard(); done(); }, 600);
+  }
+  function cheatLightningStrike(hLine, done){
+    setBubble('Lightning strike incoming ⚡', 1200); log('Lightning strike','bot');
+    document.body.classList.add('shake'); setTimeout(()=>document.body.classList.remove('shake'), 600);
+    const cellIndex = (hLine && hLine[1]) || 4; pulseCell(cellIndex); burstAtCell(cellIndex);
+    setTimeout(()=>{ state.board[cellIndex]=state.bot; updateBoard(); done(); }, 700);
+  }
+
+  function checkWinner(b){
+    for(const L of WIN_LINES){ const [a,b1,c]=L; const A=b[a],B=b[b1],C=b[c]; if(A && A===B && B===C) return {winner:A,line:L}; }
+    return {winner:null,line:null};
+  }
+  function isFull(b){ return b.every(Boolean); }
+
+  init();
+})();
+</script>
+</body>
+</html>
